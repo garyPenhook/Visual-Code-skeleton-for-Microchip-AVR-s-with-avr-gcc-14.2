@@ -3,8 +3,19 @@ cmake_minimum_required(VERSION 3.12)
 # AVR specific settings 
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR avr)
-set(CMAKE_C_COMPILER avr-gcc)
-set(CMAKE_CXX_COMPILER avr-g++)
+
+# Handle Windows/Linux compiler differences
+if(WIN32)
+    set(CMAKE_C_COMPILER "avr-gcc.exe")
+    set(CMAKE_CXX_COMPILER "avr-g++.exe")
+    set(AVRDUDE_CONF "-C${CMAKE_CURRENT_SOURCE_DIR}/avrdude.conf")
+    set(SERIAL_PORT "COM1")  # Default Windows port
+else()
+    set(CMAKE_C_COMPILER "avr-gcc")
+    set(CMAKE_CXX_COMPILER "avr-g++")
+    set(AVRDUDE_CONF "")
+    set(SERIAL_PORT "/dev/ttyUSB0")  # Default Linux port
+endif()
 
 # Project name
 project(ATtiny412_Temp_Sensor C)
@@ -54,7 +65,7 @@ add_custom_command(
 # Flash target (upload to microcontroller)
 add_custom_target(
     upload
-    COMMAND avrdude -c pickit4_isp -p ${MCU} -U flash:w:${PROJECT_NAME}.hex:i
+    COMMAND avrdude ${AVRDUDE_CONF} -c pickit4_isp -p ${MCU} -P ${SERIAL_PORT} -U flash:w:${PROJECT_NAME}.hex:i
     DEPENDS ${PROJECT_NAME}.hex
     COMMENT "Uploading to ATtiny412 using PICkit 4"
 )

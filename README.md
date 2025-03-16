@@ -71,18 +71,111 @@ This helps you optimize your code to fit within the ATtiny412's limited resource
 
 ## Programming the Microcontroller
 
-The project is configured to use a PICkit 4 programmer. Connect your PICkit 4 to the ATtiny412 with the following pins:
+The project supports multiple programmers through avrdude. The default configuration uses a PICkit 4, but you can use other programmers by modifying the upload command in CMakeLists.txt.
 
-- MCLR/VPP (Pin 1)
-- VDD (Pin 2)
-- VSS (Pin 3)
-- ICSPDAT/PGD (Pin 4)
-- ICSPCLK/PGC (Pin 5)
+### Supported Programmers
 
-Then run:
-```bash
-./build.sh upload
-```
+1. **PICkit 4 (Default Configuration)**
+   ```bash
+   # In CMakeLists.txt
+   avrdude -c pickit4_isp -p ${MCU} -U flash:w:${PROJECT_NAME}.hex:i
+   ```
+   Connections:
+   - MCLR/VPP (Pin 1)
+   - VDD (Pin 2)
+   - VSS (Pin 3)
+   - ICSPDAT/PGD (Pin 4)
+   - ICSPCLK/PGC (Pin 5)
+
+2. **USBasp Programmer**
+   ```bash
+   # In CMakeLists.txt
+   avrdude -c usbasp -p ${MCU} -U flash:w:${PROJECT_NAME}.hex:i
+   ```
+   Standard 6-pin ISP connection:
+   - MOSI
+   - MISO
+   - SCK
+   - RESET
+   - VCC
+   - GND
+
+3. **Arduino as ISP**
+   ```bash
+   # In CMakeLists.txt
+   avrdude -c arduino -P /dev/ttyACM0 -b 19200 -p ${MCU} -U flash:w:${PROJECT_NAME}.hex:i
+   ```
+   Connect using standard ISP pinout on Arduino:
+   - Digital Pin 11 (MOSI)
+   - Digital Pin 12 (MISO)
+   - Digital Pin 13 (SCK)
+   - Digital Pin 10 (RESET)
+   - 5V
+   - GND
+
+4. **USBtiny**
+   ```bash
+   # In CMakeLists.txt
+   avrdude -c usbtiny -p ${MCU} -U flash:w:${PROJECT_NAME}.hex:i
+   ```
+   Uses standard 6-pin ISP header
+
+5. **STK500v1 Protocol**
+   ```bash
+   # In CMakeLists.txt
+   avrdude -c stk500v1 -P /dev/ttyUSB0 -b 19200 -p ${MCU} -U flash:w:${PROJECT_NAME}.hex:i
+   ```
+   For programmers/boards using the STK500v1 protocol (many Arduino bootloaders)
+
+### Debugging Options
+
+The project supports multiple debugging configurations:
+
+1. **avarice + JTAG/debugWIRE**
+   ```bash
+   # Start the debug server
+   avarice --jtag usb --file ATtiny412_Temp_Sensor :1234
+   
+   # In another terminal
+   ./build.sh debug
+   ```
+   avarice supports various Atmel JTAG ICE devices
+
+2. **simulavr**
+   ```bash
+   # Start the simulator
+   simulavr --device ${MCU} --gdbserver :1234 build_cmake/ATtiny412_Temp_Sensor
+   
+   # In another terminal
+   ./build.sh debug
+   ```
+   Useful for debugging without hardware
+
+3. **PICkit 4 Debug**
+   - Requires PICkit 4 in debug mode
+   - Supports real-time debugging and breakpoints
+   - Configure in CMakeLists.txt:
+     ```cmake
+     add_custom_target(
+         debug
+         COMMAND avr-gdb -ex "target remote localhost:1234" ${PROJECT_NAME}
+         DEPENDS ${PROJECT_NAME}
+         COMMENT "Starting avr-gdb debugger"
+     )
+     ```
+
+### Common Debugging Commands
+
+Advanced GDB commands for AVR debugging:
+- `monitor reset` - Reset the microcontroller
+- `monitor break` - Set a hardware breakpoint
+- `monitor erase` - Erase flash memory
+- `x/16xb $pc` - Examine 16 bytes of memory at program counter
+- `set $pc = 0x0` - Set program counter to address 0x0
+- `info registers` - Display all AVR registers
+- `print/x $sreg` - Show status register in hex
+- `set $pc = $pc + 2` - Skip current instruction
+- `stepi` - Step one instruction
 
 ## Debugging with avr-gdb
 
@@ -197,6 +290,145 @@ After porting, run the memory usage analysis to ensure your code fits within the
 ```bash
 ./build.sh meminfo
 ```
+
+## Cross-Platform Setup Instructions
+
+### Linux Distributions
+
+#### Ubuntu/Debian
+```bash
+# Install required packages
+sudo apt-get update
+sudo apt-get install gcc-avr avr-libc avrdude cmake make git
+# Optional debugging tools
+sudo apt-get install avarice simulavr gdb-avr
+```
+
+#### Fedora
+```bash
+sudo dnf install avr-gcc avr-libc avrdude cmake make git
+# Optional debugging tools
+sudo dnf install avarice simulavr avr-gdb
+```
+
+#### Arch Linux
+```bash
+sudo pacman -S avr-gcc avr-libc avrdude cmake make git
+# Optional debugging tools
+sudo pacman -S avarice simulavr avr-gdb
+```
+
+#### openSUSE
+```bash
+sudo zypper install cross-avr-gcc cross-avr-gcc-c++ cross-avr-libc avrdude cmake make git
+# Optional debugging tools
+sudo zypper install avarice simulavr gdb-avr
+```
+
+### Windows
+
+1. **Install Required Software**
+   - Download and install [MSYS2](https://www.msys2.org/)
+   - Download and install [CMake](https://cmake.org/download/)
+   - Download and install [Git for Windows](https://gitforwindows.org/)
+
+2. **Install AVR Toolchain via MSYS2**
+   Open MSYS2 MinGW64 terminal and run:
+   ```bash
+   pacman -Syu
+   pacman -S mingw-w64-x86_64-avr-toolchain mingw-w64-x86_64-avrdude
+   # Optional debugging tools
+   pacman -S mingw-w64-x86_64-simulavr mingw-w64-x86_64-avarice
+   ```
+
+3. **Update Environment Variables**
+   - Open Windows System Properties → Advanced → Environment Variables
+   - Add to System PATH:
+     ```
+     C:\msys64\mingw64\bin
+     C:\msys64\usr\bin
+     C:\Program Files\CMake\bin
+     ```
+
+4. **Project Setup**
+   ```bash
+   # Clone the project
+   git clone <project-url>
+   cd temp_sensor
+   
+   # Create build directory
+   mkdir build_cmake
+   cd build_cmake
+   
+   # Configure with CMake
+   cmake -G "MinGW Makefiles" ..
+   
+   # Build
+   mingw32-make
+   ```
+
+5. **Windows-Specific Notes**
+   - Use `mingw32-make` instead of `make`
+   - Serial ports are named differently (COM1, COM2, etc.)
+   - Modify CMakeLists.txt for Windows paths:
+     ```cmake
+     # For Windows serial ports
+     if(WIN32)
+         set(SERIAL_PORT "COM1")  # Adjust as needed
+     else()
+         set(SERIAL_PORT "/dev/ttyUSB0")
+     endif()
+     ```
+   - Use `avrdude.conf` from your MSYS2 installation:
+     ```cmake
+     # In upload target
+     if(WIN32)
+         set(AVRDUDE_CONF "-C${CMAKE_CURRENT_SOURCE_DIR}/avrdude.conf")
+     endif()
+     ```
+
+### Project Structure Setup
+
+Regardless of your platform, maintain this structure:
+```
+temp_sensor/
+├── build_cmake/         # CMake build output directory
+├── include/             # Header files
+│   └── temp_sensor.h    # Main header file
+├── src/                 # Source code
+│   └── main.c          # Main application code
+├── CMakeLists.txt      # CMake build configuration
+├── build.sh            # Build helper script (Linux)
+├── build.bat           # Build helper script (Windows)
+└── README.md           # This file
+```
+
+### Troubleshooting Common Issues
+
+1. **AVR Toolchain Not Found**
+   - Linux: Verify installation with `avr-gcc --version`
+   - Windows: Check PATH variables and MSYS2 installation
+
+2. **CMake Configuration Fails**
+   - Ensure CMake version is 3.12 or higher
+   - Check if AVR toolchain is properly installed
+   - Verify compiler paths in CMakeLists.txt
+
+3. **Programmer Connection Issues**
+   - Check USB connections and permissions
+   - Linux: Add user to dialout group: `sudo usermod -a -G dialout $USER`
+   - Windows: Check Device Manager for COM port assignments
+
+4. **Build Script Permissions (Linux)**
+   ```bash
+   chmod +x build.sh
+   ```
+
+5. **Windows Line Endings**
+   - If scripts fail on Linux after editing on Windows:
+   ```bash
+   dos2unix build.sh
+   ```
 
 ## License
 
