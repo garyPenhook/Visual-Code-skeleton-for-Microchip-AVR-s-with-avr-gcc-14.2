@@ -1,0 +1,24 @@
+# Build directories
+build/
+build_cmake/
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Object files
+*.o
+*.obj
+*.elf
+*.hex
+
+# Editor specific files
+.vscode/
+*.swp
+*~
+
+# Debug files
+*.map
+*.lst
