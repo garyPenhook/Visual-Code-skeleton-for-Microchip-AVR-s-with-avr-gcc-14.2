@@ -350,22 +350,52 @@ sudo zypper install avarice simulavr gdb-avr
      C:\Program Files\CMake\bin
      ```
 
-4. **Project Setup**
-   ```bash
-   # Clone the project
-   git clone <project-url>
-   cd temp_sensor
+4. **Using the Windows Build Script (build.bat)**
    
-   # Create build directory
-   mkdir build_cmake
-   cd build_cmake
-   
-   # Configure with CMake
-   cmake -G "MinGW Makefiles" ..
-   
-   # Build
-   mingw32-make
+   The project includes a Windows-specific batch file (`build.bat`) that provides the same functionality as the Linux build script. You can run it from Command Prompt or PowerShell:
+
+   ```batch
+   # Basic build
+   build.bat
+
+   # Clean build directory
+   build.bat clean
+
+   # Upload to microcontroller
+   build.bat upload
+
+   # Debug with avr-gdb
+   build.bat debug
+
+   # Clean, build, and upload
+   build.bat all
+
+   # Show memory usage
+   build.bat meminfo
+
+   # Show help
+   build.bat help
    ```
+
+   The script provides real-time memory usage information during builds and supports:
+   - Automatic build directory creation and cleanup
+   - CMake configuration with MinGW Makefiles
+   - Detailed memory analysis with section breakdowns
+   - Integration with avrdude for firmware uploads
+   - Debug support with avr-gdb
+
+   Memory reporting includes:
+   - Flash usage (4KB total)
+   - SRAM usage (256 bytes total)
+   - EEPROM usage (128 bytes total)
+   - Section-by-section breakdown
+   - Top 10 largest symbols
+
+   Common issues and solutions:
+   - If you get "command not found", ensure MSYS2 paths are in your System PATH
+   - If memory info shows 0 bytes, ensure the project was built successfully
+   - For upload errors, check your COM port number in CMakeLists.txt
+   - For debugging, ensure simulavr or avarice is properly configured
 
 5. **Windows-Specific Notes**
    - Use `mingw32-make` instead of `make`
