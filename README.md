@@ -127,6 +127,29 @@ The project supports multiple programmers through avrdude. The default configura
    ```
    For programmers/boards using the STK500v1 protocol (many Arduino bootloaders)
 
+6. **Microchip SNAP**
+   ```bash
+   # In CMakeLists.txt for UPDI programming
+   avrdude -c snap_updi -p ${MCU} -U flash:w:${PROJECT_NAME}.hex:i
+   ```
+   
+   Connections for UPDI programming:
+   - UPDI Data (Pin 1 on ATtiny412)
+   - VTG (Target voltage)
+   - GND
+
+   The SNAP also supports advanced debugging features:
+   - Hardware breakpoints
+   - Real-time variable watching
+   - Program trace
+   - Power monitoring
+   - Both UPDI and debugWIRE interfaces
+
+ 
+   ```
+
+
+
 ### Debugging Options
 
 The project supports multiple debugging configurations:
