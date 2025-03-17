@@ -15,6 +15,26 @@ else()
     set(CMAKE_CXX_COMPILER "avr-g++")
     set(AVRDUDE_CONF "")
     set(SERIAL_PORT "/dev/ttyUSB0")  # Default Linux port
+    
+    # Find AVR include directories on openSUSE
+    execute_process(
+        COMMAND avr-gcc -print-search-dirs
+        OUTPUT_VARIABLE AVR_GCC_SEARCH_DIRS
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    
+    # Extract and add include paths to our project
+    string(REGEX MATCH "install: [^\n]+" AVR_INSTALL_DIR "${AVR_GCC_SEARCH_DIRS}")
+    string(REPLACE "install: " "" AVR_INSTALL_DIR "${AVR_INSTALL_DIR}")
+    
+    # Add system include directories
+    include_directories(
+        "${AVR_INSTALL_DIR}/../include"
+        "${AVR_INSTALL_DIR}/include"
+        "/usr/lib/avr/include"
+        "/usr/include/avr"
+        "/usr/avr/include"
+    )
 endif()
 
 # Project name
