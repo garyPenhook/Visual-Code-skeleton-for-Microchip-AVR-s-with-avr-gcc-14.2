@@ -2,6 +2,13 @@
 
 This project creates a temperature sensor using the ATtiny412 microcontroller. It reads the internal temperature sensor and outputs the readings via UART.
 
+[![AVR](https://img.shields.io/badge/AVR-ATtiny412-blue)](https://www.microchip.com/)
+[![AVR-GCC](https://img.shields.io/badge/AVR--GCC-14.2-orange)](https://gcc.gnu.org/)
+[![CMake](https://img.shields.io/badge/CMake-3.12%2B-green)](https://cmake.org/)
+[![Last Commit](https://img.shields.io/github/last-commit/garyPenhook/Visual-Code-skeleton-for-Microchip-AVR-s-with-avr-gcc-14.2)](https://github.com/garyPenhook/Visual-Code-skeleton-for-Microchip-AVR-s-with-avr-gcc-14.2/commits)
+[![Stars](https://img.shields.io/github/stars/garyPenhook/Visual-Code-skeleton-for-Microchip-AVR-s-with-avr-gcc-14.2)](https://github.com/garyPenhook/Visual-Code-skeleton-for-Microchip-AVR-s-with-avr-gcc-14.2/stargazers)
+[![Platform](https://img.shields.io/badge/platform-linux-lightgrey)](https://github.com/garyPenhook/Visual-Code-skeleton-for-Microchip-AVR-s-with-avr-gcc-14.2)
+
 ## Project Structure
 
 ```
